@@ -10,6 +10,8 @@ public class ResponseEncoder extends MessageToByteEncoder<Response> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, Response response, ByteBuf byteBuf) throws Exception {
         byte[] buffer = ObjectUtil.serialize(response);
+        int length = buffer.length;
+        byteBuf.writeInt(length);
         byteBuf.writeBytes(buffer);
     }
 }

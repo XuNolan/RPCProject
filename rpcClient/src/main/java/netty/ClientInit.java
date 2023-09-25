@@ -27,7 +27,6 @@ public class ClientInit {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        //todo;
                         socketChannel.pipeline().addLast(new RequestEncoder());
                         socketChannel.pipeline().addLast(new ResponseDecoder());
                         socketChannel.pipeline().addLast(new ResponseProcessHandler());

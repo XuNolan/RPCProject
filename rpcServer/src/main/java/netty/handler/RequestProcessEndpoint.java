@@ -7,6 +7,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
+import service.ServiceRegister;
 
 import java.lang.reflect.Method;
 
@@ -27,7 +28,7 @@ public class RequestProcessEndpoint extends ChannelInboundHandlerAdapter {
         request = (Request) msg;
         //进行反射定位并且调用；
         //根据类限定名获取实例？不行。客户端并不知道包名。只知道调用哪个接口。
-        Class clazz = Class.forName(request.getClassName());
+        Class clazz = ServiceRegister.getService(request.getClassName());
         Object object = clazz.getConstructor().newInstance();
         Method method = clazz.getMethod(request.getMethodName(), request.getParamType());
         Object invokeResult = method.invoke(object, request.getParamValue());

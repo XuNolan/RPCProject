@@ -21,5 +21,6 @@ public class ResponseProcessHandler extends ChannelInboundHandlerAdapter {
             throw new RuntimeException();
         CompletableFuture<Object> positionToPut = ResultMap.getResultMap().get(response.getId());
         positionToPut.complete(response.getResult());
+        ctx.channel().close();
     }
 }

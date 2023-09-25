@@ -17,6 +17,5 @@
     - Future方法？
 
 以下问题：
-1. 连接没问题但是数据收发失败。有可能是decoder和encoder的问题。需要继续debug；
-2. 服务端调用实际服务不能直接通过反射获取。
-3. 静态代理todo。
+静态代理todo
+粘包对应的decoder和encoder解决；注册解决；估计问题出在客户端的serviceImpl的阻塞上。

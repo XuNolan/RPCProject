@@ -12,6 +12,8 @@ public class RequestEncoder extends MessageToByteEncoder<Request> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, Request request, ByteBuf byteBuf) throws Exception {
         byte[] buffer = ObjectUtil.serialize(request);
+        int length = buffer.length;
+        byteBuf.writeInt(length);
         byteBuf.writeBytes(buffer);
         log.info("写入缓冲区",buffer);
     }

@@ -12,6 +12,7 @@ import netty.handler.RequestDecoder;
 import netty.handler.RequestProcessEndpoint;
 import netty.handler.ResponseEncoder;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 @Slf4j
@@ -21,8 +22,12 @@ public class ServerInit {
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
 
     private Channel channel;
+    private SocketAddress inetSocketAddress;
 
     public ServerInit(SocketAddress inetSocketAddress) {
+        this.inetSocketAddress = (InetSocketAddress) inetSocketAddress;
+    }
+    public void run(){
         bootstrap.group(bossGroup, workerGroup)
                 .handler(new LoggingHandler())
                 .channel(NioServerSocketChannel.class)
@@ -32,7 +37,6 @@ public class ServerInit {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new LoggingHandler());
                         socketChannel.pipeline().addLast(new ResponseEncoder());
                         socketChannel.pipeline().addLast(new RequestDecoder());
                         socketChannel.pipeline().addLast(new RequestProcessEndpoint(channel));
@@ -43,6 +47,7 @@ public class ServerInit {
             channel = channelFuture.channel();
             channel.closeFuture().addListener(
                     (ChannelFutureListener) future -> {
+                        log.info("server已退出");
                         bossGroup.shutdownGracefully();
                         workerGroup.shutdownGracefully();
                     }
