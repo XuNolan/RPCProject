@@ -30,7 +30,7 @@ public class ServiceImpl implements ServiceApi {
                 snowflake.nextIdStr(),
                 "ServiceApi",
                 "hello",
-                new Class[]{String.class,Integer.class},
+                new Class[]{String.class,int.class},
                 new Object[]{content,id}
                 );
         //调用netty接口进行发送。
@@ -46,7 +46,7 @@ public class ServiceImpl implements ServiceApi {
         }
         Object result = null;
         try {
-            channel.closeFuture().sync();
+            //channel.closeFuture().sync();
             CompletableFuture<Object> resultFuture = new CompletableFuture<>();
             ResultMap.getResultMap().put(request.getId(), resultFuture);
             //阻塞，获取返回值

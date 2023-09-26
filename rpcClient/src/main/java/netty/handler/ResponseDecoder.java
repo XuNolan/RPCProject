@@ -15,7 +15,7 @@ public class ResponseDecoder extends ByteToMessageDecoder {
     private int INTLENGTH = 4;
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
-        log.info("decode收到响应");
+        log.info("client收到响应");
         if (byteBuf.readableBytes() >= INTLENGTH){
             byteBuf.markReaderIndex();
             int dataLength = byteBuf.readInt();

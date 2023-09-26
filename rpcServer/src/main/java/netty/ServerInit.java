@@ -41,7 +41,7 @@ public class ServerInit {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         socketChannel.pipeline().addLast(new ResponseEncoder());
                         socketChannel.pipeline().addLast(new RequestDecoder());
-                        socketChannel.pipeline().addLast(new RequestProcessEndpoint(channel));
+                        socketChannel.pipeline().addLast(new RequestProcessEndpoint());
                     }
                 });
         try{

@@ -13,11 +13,9 @@ import service.ServiceRegister;
 
 import java.lang.reflect.Method;
 
-public class RequestProcessEndpoint extends ChannelInboundHandlerAdapter {
+public class RequestProcessEndpoint extends ChannelDuplexHandler {
     private Logger log = LoggerFactory.getLogger(RequestProcessEndpoint.class);
-    private Channel channel;
-    public RequestProcessEndpoint(Channel channel){
-        this.channel = channel;
+    public RequestProcessEndpoint(){
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -28,6 +26,7 @@ public class RequestProcessEndpoint extends ChannelInboundHandlerAdapter {
         }
         Request request;
         request = (Request) msg;
+        log.info("msg:" + request.getId() + request.getMethodName() + request.getClassName());
         //进行反射定位并且调用；
         //根据类限定名获取实例？不行。客户端并不知道包名。只知道调用哪个接口。
         Class clazz = ServiceRegister.getService(request.getClassName());
@@ -36,6 +35,6 @@ public class RequestProcessEndpoint extends ChannelInboundHandlerAdapter {
         Object invokeResult = method.invoke(object, request.getParamValue());
         Response response = new Response(request.getId(), invokeResult);
         log.info("构造res完成。结果为", String.class.cast(invokeResult));
-        channel.writeAndFlush(response);
+        ctx.channel().writeAndFlush(response);
     }
 }
