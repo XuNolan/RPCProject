@@ -1,5 +1,7 @@
 package netty.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import dto.Request;
 import dto.Response;
 import io.netty.channel.Channel;
@@ -11,8 +13,8 @@ import service.ServiceRegister;
 
 import java.lang.reflect.Method;
 
-@Slf4j
 public class RequestProcessEndpoint extends ChannelInboundHandlerAdapter {
+    private Logger log = LoggerFactory.getLogger(RequestProcessEndpoint.class);
     private Channel channel;
     public RequestProcessEndpoint(Channel channel){
         this.channel = channel;

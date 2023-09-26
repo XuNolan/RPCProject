@@ -1,6 +1,7 @@
 package netty;
 
-import com.sun.jdi.Bootstrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -15,8 +16,9 @@ import netty.handler.ResponseEncoder;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-@Slf4j
+
 public class ServerInit {
+    private Logger log = LoggerFactory.getLogger(ServerInit.class);
     private ServerBootstrap bootstrap = new ServerBootstrap();
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -25,7 +27,7 @@ public class ServerInit {
     private SocketAddress inetSocketAddress;
 
     public ServerInit(SocketAddress inetSocketAddress) {
-        this.inetSocketAddress = (InetSocketAddress) inetSocketAddress;
+        this.inetSocketAddress = inetSocketAddress;
     }
     public void run(){
         bootstrap.group(bossGroup, workerGroup)

@@ -1,24 +1,31 @@
 package netty;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.extern.slf4j.Slf4j;
 import netty.handler.RequestEncoder;
 import netty.handler.ResponseDecoder;
 import netty.handler.ResponseProcessHandler;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-
 public class ClientInit {
+    private Logger log = LoggerFactory.getLogger(ClientInit.class);
     private Bootstrap bootstrap = new Bootstrap();
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
-    private Channel channel;
+    private static Channel channel;
+    private SocketAddress socketAddress;
 
-    public ClientInit(SocketAddress inetSocketAddress) {
+    public ClientInit(SocketAddress socketAddress) {
+       this.socketAddress = socketAddress;
+    }
+    public void run(){
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -33,12 +40,15 @@ public class ClientInit {
                     }
                 });
         try{
-            ChannelFuture channelFuture = bootstrap.connect(inetSocketAddress).sync();
+            ChannelFuture channelFuture = bootstrap.connect(socketAddress).sync();
+            log.info("客户端已启动");
             channel = channelFuture.channel();
+            channel.closeFuture().addListener( future -> {
+                log.info("服务端已退出");
+                eventLoopGroup.shutdownGracefully();
+            });
         }catch(InterruptedException e){
             e.printStackTrace();
-        }finally {
-            eventLoopGroup.shutdownGracefully();
         }
     }
     public Channel getChannel(){
