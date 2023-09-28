@@ -7,11 +7,10 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class Request implements Serializable {
+public class RpcRequest implements Serializable {
     private static final long serialVersionUID = 1905122041950251207L;
-
     private String id;
-    private String ClassName; //类名；
+    private String ClassName;
     private String methodName;
     private Class[] paramType;
     private Object[] paramValue;

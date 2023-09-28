@@ -1,5 +1,7 @@
 package netty;
 
+import enums.ExceptionEnum;
+import exception.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -7,22 +9,20 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import lombok.extern.slf4j.Slf4j;
-import netty.handler.RequestEncoder;
-import netty.handler.ResponseDecoder;
+import netty.handler.codec.RequestEncoder;
+import netty.handler.codec.ResponseDecoder;
 import netty.handler.ResponseProcessHandler;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-public class ClientInit {
-    private Logger log = LoggerFactory.getLogger(ClientInit.class);
-    private Bootstrap bootstrap = new Bootstrap();
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+public class NettyClientInit {
+    private final Logger log = LoggerFactory.getLogger(NettyClientInit.class);
+    private final Bootstrap bootstrap = new Bootstrap();
+    private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
     private static Channel channel;
-    private SocketAddress socketAddress;
+    private final SocketAddress socketAddress;
 
-    public ClientInit(SocketAddress socketAddress) {
+    public NettyClientInit(SocketAddress socketAddress) {
        this.socketAddress = socketAddress;
     }
     public void run(){
@@ -33,7 +33,7 @@ public class ClientInit {
                 .option(ChannelOption.TCP_NODELAY,true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    protected void initChannel(SocketChannel socketChannel) {
                         socketChannel.pipeline().addLast(new RequestEncoder());
                         socketChannel.pipeline().addLast(new ResponseDecoder());
                         socketChannel.pipeline().addLast(new ResponseProcessHandler());
@@ -48,7 +48,7 @@ public class ClientInit {
                 eventLoopGroup.shutdownGracefully();
             });
         }catch(InterruptedException e){
-            e.printStackTrace();
+            throw new RpcException(ExceptionEnum.RpcClientInitFail, e);
         }
     }
     public Channel getChannel(){

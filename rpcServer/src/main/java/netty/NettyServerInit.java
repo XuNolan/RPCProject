@@ -1,5 +1,7 @@
 package netty;
 
+import enums.ExceptionEnum;
+import exception.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.ServerBootstrap;
@@ -8,25 +10,23 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import lombok.extern.slf4j.Slf4j;
-import netty.handler.RequestDecoder;
+import netty.handler.codec.RequestDecoder;
 import netty.handler.RequestProcessEndpoint;
-import netty.handler.ResponseEncoder;
+import netty.handler.codec.ResponseEncoder;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 
-public class ServerInit {
-    private Logger log = LoggerFactory.getLogger(ServerInit.class);
-    private ServerBootstrap bootstrap = new ServerBootstrap();
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
-    private EventLoopGroup bossGroup = new NioEventLoopGroup();
+public class NettyServerInit {
+    private static final Logger log = LoggerFactory.getLogger(NettyServerInit.class);
+    private final ServerBootstrap bootstrap = new ServerBootstrap();
+    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private final EventLoopGroup bossGroup = new NioEventLoopGroup();
 
     private Channel channel;
-    private SocketAddress inetSocketAddress;
+    private final SocketAddress inetSocketAddress;
 
-    public ServerInit(SocketAddress inetSocketAddress) {
+    public NettyServerInit(SocketAddress inetSocketAddress) {
         this.inetSocketAddress = inetSocketAddress;
     }
     public void run(){
@@ -38,7 +38,7 @@ public class ServerInit {
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    protected void initChannel(SocketChannel socketChannel) {
                         socketChannel.pipeline().addLast(new ResponseEncoder());
                         socketChannel.pipeline().addLast(new RequestDecoder());
                         socketChannel.pipeline().addLast(new RequestProcessEndpoint());
@@ -46,8 +46,8 @@ public class ServerInit {
                 });
         try{
             ChannelFuture channelFuture = bootstrap.bind(inetSocketAddress).sync();
-            channel = channelFuture.channel();
-            channel.closeFuture().addListener(
+            this.channel = channelFuture.channel();
+            this.channel.closeFuture().addListener(
                     (ChannelFutureListener) future -> {
                         log.info("server已退出");
                         bossGroup.shutdownGracefully();
@@ -56,10 +56,7 @@ public class ServerInit {
             );
             log.info("server已启动");
         }catch(InterruptedException e){
-            e.printStackTrace();
+            throw new RpcException(ExceptionEnum.RpcServerInitFail, e);
         }
-    }
-    public Channel getChannel(){
-        return channel;
     }
 }

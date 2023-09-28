@@ -1,8 +1,8 @@
-package netty.handler;
+package netty.handler.codec;
 
 import cn.hutool.core.util.ObjectUtil;
 
-import dto.Request;
+import dto.RpcRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class RequestEncoder extends MessageToByteEncoder<Request> {
-    private Logger log = LoggerFactory.getLogger(RequestEncoder.class);
+public class RequestEncoder extends MessageToByteEncoder<RpcRequest> {
+    private final Logger log = LoggerFactory.getLogger(RequestEncoder.class);
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Request request, ByteBuf byteBuf) throws Exception {
-        byte[] buffer = ObjectUtil.serialize(request);
+    protected void encode(ChannelHandlerContext channelHandlerContext, RpcRequest rpcRequest, ByteBuf byteBuf) {
+        byte[] buffer = ObjectUtil.serialize(rpcRequest);
         int length = buffer.length;
         byteBuf.writeInt(length);
         byteBuf.writeBytes(buffer);
