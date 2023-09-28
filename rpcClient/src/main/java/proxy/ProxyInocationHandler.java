@@ -43,17 +43,15 @@ public class ProxyInocationHandler implements InvocationHandler {
         }
         RpcResponse result;
         try {
-            channel.closeFuture().sync();
             CompletableFuture<RpcResponse> resultFuture = new CompletableFuture<>();
             ResultMap.getResultMap().put(rpcRequest.getId(), resultFuture);
-            log.info("线程阻塞在获取返回值中");
             result = resultFuture.get(); //阻塞，获取返回值
         }catch(InterruptedException | ExecutionException e) {
             throw new RpcException(ExceptionEnum.RpcProcessWaitFail,e);
         }
 
         if(result.getResCode().getCode() == ResCodeEnum.Success.getCode()) {
-            return method.getReturnType().cast(result);
+            return method.getReturnType().cast(result.getResData().getResult());
         }
         return null;
     }

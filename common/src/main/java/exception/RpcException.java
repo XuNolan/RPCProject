@@ -21,7 +21,7 @@ public class RpcException extends RuntimeException {
         this.errorMsg = exceptionEnum.getDesc();
     }
 
-    public int getErrorrCode() {
+    public int getErrorCode() {
         return this.errorCode;
     }
     public String getErrorMsg() {

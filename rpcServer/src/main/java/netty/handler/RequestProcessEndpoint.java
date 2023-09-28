@@ -8,13 +8,14 @@ import enums.ExceptionEnum;
 import exception.RpcException;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import register.ServiceRegister;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 public class RequestProcessEndpoint extends ChannelDuplexHandler {
-    //private static final Logger log = LoggerFactory.getLogger(RequestProcessEndpoint.class);
+    private static final Logger log = LoggerFactory.getLogger(RequestProcessEndpoint.class);
     public RequestProcessEndpoint(){
     }
     @Override
@@ -32,11 +33,11 @@ public class RequestProcessEndpoint extends ChannelDuplexHandler {
 
             Object invokeResult = method.invoke(object, rpcRequest.getParamValue());
 
-            ResData resData = new ResData(rpcRequest.getId(), Optional.of(invokeResult));
+            ResData resData = new ResData(rpcRequest.getId(), invokeResult);
             RpcResponse rpcResponse = RpcResponse.getSuccessResponse(resData, "构造res完成。结果为" + method.getReturnType().cast(invokeResult));
             ctx.channel().writeAndFlush(rpcResponse);
         } catch (AssertionError e) {
-            ResData resData = new ResData(rpcRequest.getId(), Optional.empty());
+            ResData resData = new ResData(rpcRequest.getId(), null);
             RpcResponse rpcResponse = RpcResponse.getFailResponse("未找到注册的服务", resData);
             ctx.channel().writeAndFlush(rpcResponse);
             //throw new RpcException(ExceptionEnum.RpcServiceNotFound, e);

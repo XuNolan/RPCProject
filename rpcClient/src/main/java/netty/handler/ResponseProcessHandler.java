@@ -29,6 +29,5 @@ public class ResponseProcessHandler extends ChannelInboundHandlerAdapter {
         //结果正确性在代理处理函数中进行。
         CompletableFuture<RpcResponse> positionToPut = ResultMap.getResultMap().get(id);
         positionToPut.complete(rpcResponse);
-        ctx.channel().close();
     }
 }

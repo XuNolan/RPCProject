@@ -21,7 +21,7 @@ public class ResponseDecoder extends ByteToMessageDecoder {
             if(dataLength < 0 || byteBuf.readableBytes() < 0) {
                 return;
             }
-            if( byteBuf.readableBytes() < dataLength) {
+            if(byteBuf.readableBytes() < dataLength) {
                 byteBuf.resetReaderIndex();
             }
             byte[] data = new byte[byteBuf.readableBytes()];

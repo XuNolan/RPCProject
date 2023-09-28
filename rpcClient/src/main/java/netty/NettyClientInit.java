@@ -43,7 +43,7 @@ public class NettyClientInit {
             ChannelFuture channelFuture = bootstrap.connect(socketAddress).sync();
             log.info("客户端已启动");
             channel = channelFuture.channel();
-            channel.closeFuture().addListener( future -> {
+            channel.closeFuture().addListener(future -> {
                 log.info("服务端已退出");
                 eventLoopGroup.shutdownGracefully();
             });
