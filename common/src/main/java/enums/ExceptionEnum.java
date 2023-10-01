@@ -12,8 +12,10 @@ public enum ExceptionEnum {
     RpcRequestMsgInvalid(4, "收到无法解析的请求报文"),
     RpcServiceNotFound(5, "找不到对应的服务"),
     RpcServerInitFail(6,"Netty服务端初始化异常"),
-    RpcClientInitFail(7,"Netty客户端初始化异常")
+    RpcClientInitFail(7,"Netty客户端初始化异常"),
 
+    RpcSerializeFail(8, "序列化失败"),
+    RpcDeserializeFail(8, "反序列化失败"),
             ;
 
     private final int code;

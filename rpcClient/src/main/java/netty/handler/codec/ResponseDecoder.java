@@ -1,17 +1,23 @@
 package netty.handler.codec;
 
-import cn.hutool.core.util.ObjectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import dto.RpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import serializer.Serializer;
 
 import java.util.List;
+
 
 public class ResponseDecoder extends ByteToMessageDecoder {
     private final Logger log = LoggerFactory.getLogger(ResponseDecoder.class);
     private static final int INTLENGTH = 4;
+    private final Serializer serializer;
+    public ResponseDecoder(Serializer serializer){
+        this.serializer = serializer;
+    }
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         log.info("client收到响应");
@@ -26,7 +32,7 @@ public class ResponseDecoder extends ByteToMessageDecoder {
             }
             byte[] data = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(data);
-            list.add(ObjectUtil.deserialize(data));
+            list.add(serializer.deserialize(data, RpcResponse.class));
         }
     }
 }

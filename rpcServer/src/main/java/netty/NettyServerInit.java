@@ -13,6 +13,8 @@ import io.netty.handler.logging.LoggingHandler;
 import netty.handler.codec.RequestDecoder;
 import netty.handler.RequestProcessEndpoint;
 import netty.handler.codec.ResponseEncoder;
+import serializer.Serializer;
+import serializer.kryo.KryoSerializer;
 
 import java.net.SocketAddress;
 
@@ -25,6 +27,7 @@ public class NettyServerInit {
 
     private Channel channel;
     private final SocketAddress inetSocketAddress;
+    private final Serializer serializer = new KryoSerializer();
 
     public NettyServerInit(SocketAddress inetSocketAddress) {
         this.inetSocketAddress = inetSocketAddress;
@@ -39,8 +42,8 @@ public class NettyServerInit {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        socketChannel.pipeline().addLast(new ResponseEncoder());
-                        socketChannel.pipeline().addLast(new RequestDecoder());
+                        socketChannel.pipeline().addLast(new ResponseEncoder(serializer));
+                        socketChannel.pipeline().addLast(new RequestDecoder(serializer));
                         socketChannel.pipeline().addLast(new RequestProcessEndpoint());
                     }
                 });

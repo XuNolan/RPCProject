@@ -12,6 +12,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import netty.handler.codec.RequestEncoder;
 import netty.handler.codec.ResponseDecoder;
 import netty.handler.ResponseProcessHandler;
+import serializer.Serializer;
+import serializer.kryo.KryoSerializer;
 
 import java.net.SocketAddress;
 public class NettyClientInit {
@@ -21,6 +23,7 @@ public class NettyClientInit {
 
     private static Channel channel;
     private final SocketAddress socketAddress;
+    private final Serializer serializer = new KryoSerializer();
 
     public NettyClientInit(SocketAddress socketAddress) {
        this.socketAddress = socketAddress;
@@ -34,8 +37,8 @@ public class NettyClientInit {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        socketChannel.pipeline().addLast(new RequestEncoder());
-                        socketChannel.pipeline().addLast(new ResponseDecoder());
+                        socketChannel.pipeline().addLast(new RequestEncoder(serializer));
+                        socketChannel.pipeline().addLast(new ResponseDecoder(serializer));
                         socketChannel.pipeline().addLast(new ResponseProcessHandler());
                     }
                 });

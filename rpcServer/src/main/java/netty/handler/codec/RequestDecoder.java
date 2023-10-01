@@ -1,17 +1,21 @@
 package netty.handler.codec;
 
-import cn.hutool.core.util.ObjectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import dto.RpcRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import serializer.Serializer;
 
 import java.util.List;
 public class RequestDecoder extends ByteToMessageDecoder {
     private static final Logger log = LoggerFactory.getLogger(RequestDecoder.class);
     private static final int INTLENGTH = 4;
+    private final Serializer serializer;
+    public RequestDecoder(Serializer serializer){
+        this.serializer = serializer;
+    }
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         if (byteBuf.readableBytes()>=INTLENGTH){
@@ -26,7 +30,7 @@ public class RequestDecoder extends ByteToMessageDecoder {
             byte[] data = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(data);
             log.info("收到msg，byte为",data);
-            list.add(ObjectUtil.deserialize(data));
+            list.add(serializer.deserialize(data, RpcRequest.class));
         }
 
     }
