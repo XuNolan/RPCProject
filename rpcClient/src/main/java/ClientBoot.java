@@ -1,5 +1,7 @@
 import api.ServiceApi;
 import cn.hutool.core.util.ObjectUtil;
+import loadbalance.LoadBalancer;
+import loadbalance.impl.RandomLoadBalance;
 import netty.NettyClientInit;
 import proxy.ProxyFactory;
 import registry.ServiceRegistry;
@@ -12,8 +14,8 @@ public class ClientBoot {
     public static void main(String[] args) {
         ServiceRegistry registry = new NacosServiceRegistry();
         List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
-        //todo 负载均衡
-        InetSocketAddress targetAddress = addresses.get(0);
+        LoadBalancer loadBalancer = new RandomLoadBalance();
+        InetSocketAddress targetAddress = loadBalancer.getService(addresses);//这个负载均衡感觉也就是意思意思（）
         NettyClientInit nettyClient = new NettyClientInit(targetAddress);
         nettyClient.run();
         //根据泛型获取代理
