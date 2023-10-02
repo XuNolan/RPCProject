@@ -57,3 +57,13 @@
        - 重复代码过多，错误处理和kryo和文件资源释放也有点乱。对decoder和encoderhandler内部代码改动过多。
      - 而在guide中，提取出了serializer类接口，并将序列化与反序列化的方法全部封装到kryoSerilizer实现类中。根据decoder和encoder使用情况设计入参和出参。
      - 好处不言而喻，也利于此后其他序列化框架的引入。且encoder和decoder的改动也降到了最少。仍然可以获取到byte字节（利于获取长度）或反序列化得到的对象。
+
+周一：
+- 引入服务注册和发现逻辑，但是出现报错。Connection refused: /127.0.0.1:9848，并最终落到注册服务失败。
+- 推测是nacos的问题。之前rms项目中也存在读取不到nacos配置的问题。两个方向：
+  - 没有出现nacos的配置，这有点反常理；回顾nacos的启动，出现`docker run -d -p 8848:8848 -e MODE=standalone -v /Users/xubin/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties -v /Users/xubin/nacos/logs:/home/nacos/logs --restart always --name nacos nacos/nacos-server`
+    - 即，涉及nacos/init.d/custom.properties文件，内部management.endpoints.web.exposure.include=*
+    - 开放全部的对外监控的节点，这个应该没有问题
+  - 另一个问题有可能是客户端与服务端无法创建链接；telnet试图连接nacos失败；
+  - 在按照教程上在映射8848的端口之后额外映射9848，即添加-p 9848:9848即可正常连接。
+- 此外，nacos只是提供了服务与地址的映射。实际服务获取的流程还是需要客户端和服务端来完成。也就是说，服务端在向nacos注册服务之外，对于自己提供的服务map还是需要在本地进行保存。本地保存的map与服务注册并不冲突。

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @NoArgsConstructor
-public class ServiceRegister {
+public class LocalServiceRecord {
     private static final Map<String, Class<?>> serviceMap = new HashMap<>();//name-object;
     public static Boolean registerService(String name, Class<?> serviceClass){
         if(serviceMap.containsKey(name))

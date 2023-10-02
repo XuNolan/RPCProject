@@ -25,6 +25,7 @@ public class NettyServerInit {
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private final EventLoopGroup bossGroup = new NioEventLoopGroup();
 
+
     private Channel channel;
     private final SocketAddress inetSocketAddress;
     private final Serializer serializer = new KryoSerializer();

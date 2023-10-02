@@ -50,7 +50,7 @@ public class KryoSerializer implements Serializer {
             kryoPool.free(kryo);
             return clazz.cast(o);
         } catch (IOException e) {
-            throw new RpcException(ExceptionEnum.RpcSerializeFail, e);
+            throw new RpcException(ExceptionEnum.RpcDeserializeFail, e);
         }
     }
 }

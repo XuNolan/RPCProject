@@ -2,15 +2,19 @@ import api.ServiceApi;
 import cn.hutool.core.util.ObjectUtil;
 import netty.NettyClientInit;
 import proxy.ProxyFactory;
+import registry.ServiceRegistry;
+import registry.impl.NacosServiceRegistry;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.util.List;
 
 public class ClientBoot {
     public static void main(String[] args) {
-        //启动rpc客户端；
-        SocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1",9999);
-        NettyClientInit nettyClient = new NettyClientInit(inetSocketAddress);
+        ServiceRegistry registry = new NacosServiceRegistry();
+        List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
+        //todo 负载均衡
+        InetSocketAddress targetAddress = addresses.get(0);
+        NettyClientInit nettyClient = new NettyClientInit(targetAddress);
         nettyClient.run();
         //根据泛型获取代理
         ServiceApi service = new ProxyFactory<ServiceApi>().getProxy(ServiceApi.class, nettyClient);

@@ -15,7 +15,10 @@ public enum ExceptionEnum {
     RpcClientInitFail(7,"Netty客户端初始化异常"),
 
     RpcSerializeFail(8, "序列化失败"),
-    RpcDeserializeFail(8, "反序列化失败"),
+    RpcDeserializeFail(9, "反序列化失败"),
+    ConnectToServiceRegistryFail(10, "连接服务注册和发现中心失败"),
+    RegisterToServiceFail(11, "注册服务失败"),
+    GetServiceFail(12, "获取服务失败"),
             ;
 
     private final int code;
