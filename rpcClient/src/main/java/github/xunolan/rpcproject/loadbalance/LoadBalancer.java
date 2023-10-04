@@ -1,0 +1,8 @@
+package github.xunolan.rpcproject.loadbalance;
+
+import java.net.InetSocketAddress;
+import java.util.List;
+
+public interface LoadBalancer {
+    InetSocketAddress getService(List<InetSocketAddress> services);
+}

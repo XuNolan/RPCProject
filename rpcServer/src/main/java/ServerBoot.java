@@ -1,9 +1,9 @@
-import api.ServiceApi;
-import netty.NettyServerInit;
-import register.LocalServiceRecord;
-import registry.ServiceRegistry;
-import registry.impl.NacosServiceRegistry;
-import service.impl.ServiceImpl;
+import github.xunolan.rpcproject.api.ServiceApi;
+import github.xunolan.rpcproject.netty.NettyServerInit;
+import github.xunolan.rpcproject.register.LocalServiceRecord;
+import github.xunolan.rpcproject.registry.ServiceRegistry;
+import github.xunolan.rpcproject.registry.impl.NacosServiceRegistry;
+import github.xunolan.rpcproject.service.impl.ServiceImpl;
 
 import java.net.InetSocketAddress;
 

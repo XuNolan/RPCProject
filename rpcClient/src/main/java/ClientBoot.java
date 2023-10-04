@@ -1,11 +1,11 @@
-import api.ServiceApi;
+import github.xunolan.rpcproject.api.ServiceApi;
 import cn.hutool.core.util.ObjectUtil;
-import loadbalance.LoadBalancer;
-import loadbalance.impl.RandomLoadBalance;
-import netty.NettyClientInit;
-import proxy.ProxyFactory;
-import registry.ServiceRegistry;
-import registry.impl.NacosServiceRegistry;
+import github.xunolan.rpcproject.loadbalance.LoadBalancer;
+import github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance;
+import github.xunolan.rpcproject.netty.NettyClientInit;
+import github.xunolan.rpcproject.proxy.ProxyFactory;
+import github.xunolan.rpcproject.registry.ServiceRegistry;
+import github.xunolan.rpcproject.registry.impl.NacosServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
