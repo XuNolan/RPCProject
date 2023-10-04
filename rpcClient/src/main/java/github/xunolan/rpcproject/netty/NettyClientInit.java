@@ -2,6 +2,7 @@ package github.xunolan.rpcproject.netty;
 
 import github.xunolan.rpcproject.enums.ExceptionEnum;
 import github.xunolan.rpcproject.exception.RpcException;
+import github.xunolan.rpcproject.extension.ExtensionLoader;
 import github.xunolan.rpcproject.netty.handler.ResponseProcessHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +23,14 @@ public class NettyClientInit {
     private final Logger log = LoggerFactory.getLogger(NettyClientInit.class);
     private final Bootstrap bootstrap = new Bootstrap();
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-
     private static Channel channel;
     private final SocketAddress socketAddress;
     private Serializer serializer;
 
-
     public NettyClientInit(SocketAddress socketAddress) {
        this.socketAddress = socketAddress;
         //init serializer
-        ServiceLoader<Serializer> serviceLoader = ServiceLoader.load(Serializer.class);
-        for (Serializer temp : serviceLoader) {
-            System.out.println("load" + temp.getClass().getName());
-            if (temp.getClass().getSimpleName().equals(KryoSerializer.class.getSimpleName())) {
-                this.serializer = temp;
-            }
-        }
+        serializer = (Serializer) ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
     }
     public void run(){
         bootstrap.group(eventLoopGroup)

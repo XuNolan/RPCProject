@@ -1,2 +1,2 @@
-github.xunolan.rpcproject.serializer.kryo.KryoSerializer
-github.xunolan.rpcproject.serializer.kryo.WhatEverSerializer
+kryo=github.xunolan.rpcproject.serializer.kryo.KryoSerializer
+invalid=github.xunolan.rpcproject.serializer.kryo.WhatEverSerializer
