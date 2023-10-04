@@ -9,40 +9,87 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-//包结构有点乱。理论上extension不应当与serializer实现放在一起的。
+
 public class ExtensionLoader<T> {
-    //如果对标dubbo，对外接口应当是ExtensionLoader.getExtensionLoader(Interface.class).getExtension("SpecificServiceName");
-    //似乎并没有SPI的必要。因为指定了getExtensionLoader接口。这一步类似于jdk的ServiceLoader.load(Interface.class).
-    private String URL = "META-INF/services/";
-    private Class<T> type;//一个ExtensionLoader只会对应一个classLooader；
-    //接口类和对应的ExtensionLoader对象的map。相当于map的map；
-    private static Map<Class<?>, ExtensionLoader<?>> INTERFACETYPE_EXTENSIONLOADER_MAP = new HashMap<>();
-    //根据接口，自然得出了返回值为ExtensionLoader的结论（
-    //不然本来自己还想使用若干个Map来处理的。
-    //不过确实通过保存一个name-自己对象的staticMap，结构确实更加清晰。要记住这种方法。
-    public static ExtensionLoader<?> getExtensionLoader(Class<?> clazz) {
-        ExtensionLoader<?> extensionLoader = INTERFACETYPE_EXTENSIONLOADER_MAP.getOrDefault(clazz, null);
+    private static final String URL = "META-INF/services/";
+    private static final Map<Class<?>, ExtensionLoader<?>> INTERFACETYPE_EXTENSIONLOADER_MAP = new HashMap<>();
+
+    private final Class<T> type;
+
+    public static <S> ExtensionLoader<S> getExtensionLoader(Class<S> clazz) {
+        //进行校验，并优化泛型；泛型优化主要是为了与ExtensionLoader类的泛型保持一致。
+        if(clazz == null){
+            throw new IllegalArgumentException("Extension type should not be null.");
+        }
+        if(!clazz.isInterface()){
+            throw new IllegalArgumentException("Extension type must be an interface.");
+        }
+        if(clazz.getAnnotation(SPI.class) == null){
+            throw new IllegalArgumentException("Extension type must be annotated by @SPI");
+        }
+        ExtensionLoader<S> extensionLoader = (ExtensionLoader<S>) INTERFACETYPE_EXTENSIONLOADER_MAP.get(clazz);
         if(extensionLoader == null) {
-            //没有缓存。需要初始化。
             extensionLoader = new ExtensionLoader<>(clazz);
             INTERFACETYPE_EXTENSIONLOADER_MAP.putIfAbsent(clazz, extensionLoader);
         }
         return extensionLoader;
     }
-    private Map<String, Class<?>> aliasClassMap = new HashMap<>();
+
     private ExtensionLoader(Class<T> type) {
         this.type = type;
-        //先忽略缓存。全部现场查找并构建。
-        //对于接口类，先通过获取type的全类名来定位配置路径下的文件。
+    }
+    //两个问题：
+    //nameInstanceCacheMap和classInstanceMap是否重复？之前示例代码中，classInstanceMap是static的。
+    //holder还是没有引入。有什么用吗？
+    private final Map<String, Object> nameInstanceCacheMap = new HashMap<>();
+    private final Map<String, Class<?>> nameClassCacheMap = new HashMap<>();
+    private final Map<Class<?>, Object> classInstanceMap = new HashMap<>();
+    public T getExtension(String name) {
+        //缓存处理1。对Extension实例进行缓存；
+        Object extensionInstance = nameInstanceCacheMap.get(name);
+        if(extensionInstance == null) {
+//            //缓存为空，考虑进行加载。走获取class的路线。
+//            //下述是原无缓存2的逻辑
+//            loadDirectory();
+//            Class<?> clazz =  aliasClassMap.get(name);
+//            try{
+//                extensionCachedInstance = clazz.newInstance();
+//                nameInstanceCacheMap.putIfAbsent(name,extensionInstance);//cache
+//                return this.type.cast(extensionInstance);
+//            } catch(InstantiationException | IllegalAccessException e) {
+//                e.printStackTrace();
+//            }
+            //缓存处理2。对Extension实例的class对象进行缓存。
+            Class<?> clazz = nameClassCacheMap.get(name);
+            if(clazz == null) {
+                loadDirectory();//从文件夹内部加载配置的服务的类class
+                clazz = nameClassCacheMap.get(name);//重新获取；
+            }
+            assert clazz != null;
+            try {
+                //缓存处理3。对Extension实例的实例化对象进行缓存。
+                extensionInstance = classInstanceMap.get(clazz);
+                if(extensionInstance == null){
+                    extensionInstance = clazz.newInstance();
+                    classInstanceMap.putIfAbsent(clazz, extensionInstance);//cache
+                }
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            nameInstanceCacheMap.putIfAbsent(name,extensionInstance);
+        }
+        return this.type.cast(extensionInstance);
+    }
+
+    private void loadDirectory(){
+        //寻找META文件夹内部接口类对应的文件，并加载别名和class的逻辑单独提出；
         String filename = URL + type.getName();
         try {
             ClassLoader classLoader = ExtensionLoader.class.getClassLoader();
             Enumeration<URL> urls = classLoader.getResources(filename);
             if(urls != null) {
                 while(urls.hasMoreElements()) {
-                    //遍历文件内部的每一行；
                     URL resourceUrl = urls.nextElement();
-                    //在遍历的过程中顺便初始化了这个Class接口类的所有别名和具体类。
                     loadResource(resourceUrl);
                 }
             }
@@ -50,7 +97,6 @@ public class ExtensionLoader<T> {
             throw new RuntimeException(e);
         }
     }
-    //处理单个配置文件。对于每一行，将服务别名和具体包名全路径放入map中。
     private void loadResource(URL resourceUrl) {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(resourceUrl.openStream(), StandardCharsets.UTF_8))){
            String line;
@@ -64,10 +110,9 @@ public class ExtensionLoader<T> {
                        final int ei = line.indexOf('=');
                        String name = line.substring(0, ei).trim();
                        String clazzName = line.substring(ei + 1).trim();
-                       // our SPI use key-value pair so both of them must not be empty
                        if (name.length() > 0 && clazzName.length() > 0) {
                            Class<?> clazz = this.getClass().getClassLoader().loadClass(clazzName);
-                           aliasClassMap.put(name, clazz);
+                           nameClassCacheMap.put(name, clazz);
                        }
                    } catch (ClassNotFoundException e) {
                        e.printStackTrace();
@@ -78,15 +123,5 @@ public class ExtensionLoader<T> {
             e.printStackTrace();
         }
     }
-    public T getExtension(String name) {
-        Class<?> clazz =  aliasClassMap.get(name);
-        try{
-            Object instance = clazz.newInstance();
-            return this.type.cast(instance);
-        } catch(InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
- 
+
 }
