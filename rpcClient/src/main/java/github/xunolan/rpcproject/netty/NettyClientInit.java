@@ -16,6 +16,8 @@ import github.xunolan.rpcproject.serializer.Serializer;
 import github.xunolan.rpcproject.serializer.kryo.KryoSerializer;
 
 import java.net.SocketAddress;
+import java.util.ServiceLoader;
+
 public class NettyClientInit {
     private final Logger log = LoggerFactory.getLogger(NettyClientInit.class);
     private final Bootstrap bootstrap = new Bootstrap();
@@ -23,10 +25,19 @@ public class NettyClientInit {
 
     private static Channel channel;
     private final SocketAddress socketAddress;
-    private final Serializer serializer = new KryoSerializer();
+    private Serializer serializer;
+
 
     public NettyClientInit(SocketAddress socketAddress) {
        this.socketAddress = socketAddress;
+        //init serializer
+        ServiceLoader<Serializer> serviceLoader = ServiceLoader.load(Serializer.class);
+        for (Serializer temp : serviceLoader) {
+            System.out.println("load" + temp.getClass().getName());
+            if (temp.getClass().getSimpleName().equals(KryoSerializer.class.getSimpleName())) {
+                this.serializer = temp;
+            }
+        }
     }
     public void run(){
         bootstrap.group(eventLoopGroup)

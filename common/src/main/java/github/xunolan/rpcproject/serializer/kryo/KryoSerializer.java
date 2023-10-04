@@ -27,6 +27,9 @@ public class KryoSerializer implements Serializer {
             return kryo;
         }
     };
+    static {
+        System.out.println("KryoSerializer init");
+    }
 
     @Override
     public byte[] serialize(Object object) {

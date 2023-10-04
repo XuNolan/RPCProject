@@ -95,4 +95,19 @@
 
 在查看示例代码的过程中，跳到实现spi了。单纯看代码看不懂，还是需要落到外围用法中去。
 - 注意之后读源码过程中还是得遵照"理解需求"->"初始理解代码（可能看不懂）"->"找其他人的相同机制实现或者查看外围用法"->自己尝试实现并进行对比来理解这样设计的原因   这样的思路来处理。
-- 
+
+首先实现jdk版本的spi。实现结果如下。
+```
+KryoSerializer init
+loadgithub.xunolan.rpcproject.serializer.kryo.KryoSerializer
+init WhatEverSerializer
+loadgithub.xunolan.rpcproject.serializer.kryo.WhatEverSerializer
+[AppLog] 2023-10-04 18:30:09   客户端已启动
+[AppLog] 2023-10-04 18:30:09   写入缓冲区
+[AppLog] 2023-10-04 18:30:09   client send message
+[AppLog] 2023-10-04 18:30:09   client收到响应
+hhh0serverResponse
+[AppLog] 2023-10-04 18:30:09   [e5d1c50d-157b-4ad2-a1e4-0a6d20314d56] Receive server push request, request = NotifySubscriberRequest, requestId = 13
+[AppLog] 2023-10-04 18:30:09   [e5d1c50d-157b-4ad2-a1e4-0a6d20314d56] Ack server push request, request = NotifySubscriberRequest, requestId = 13
+```
+仅在客户端完成了spi的逻辑。可以看到两个类都加载了，且客户端使用的是kryo序列化。
