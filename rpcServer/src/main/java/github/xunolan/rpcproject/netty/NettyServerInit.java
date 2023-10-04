@@ -2,19 +2,19 @@ package github.xunolan.rpcproject.netty;
 
 import github.xunolan.rpcproject.enums.ExceptionEnum;
 import github.xunolan.rpcproject.exception.RpcException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import github.xunolan.rpcproject.extension.ExtensionLoader;
+import github.xunolan.rpcproject.netty.handler.RequestProcessEndpoint;
+import github.xunolan.rpcproject.netty.handler.codec.RequestDecoder;
+import github.xunolan.rpcproject.netty.handler.codec.ResponseEncoder;
+import github.xunolan.rpcproject.serializer.Serializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import github.xunolan.rpcproject.netty.handler.codec.RequestDecoder;
-import github.xunolan.rpcproject.netty.handler.RequestProcessEndpoint;
-import github.xunolan.rpcproject.netty.handler.codec.ResponseEncoder;
-import github.xunolan.rpcproject.serializer.Serializer;
-import github.xunolan.rpcproject.serializer.kryo.KryoSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 
@@ -28,7 +28,7 @@ public class NettyServerInit {
 
     private Channel channel;
     private final SocketAddress inetSocketAddress;
-    private final Serializer serializer = new KryoSerializer();
+    private final Serializer serializer = ExtensionLoader.getExtensionLoader(Serializer.class).getExtension("kryo");
 
     public NettyServerInit(SocketAddress inetSocketAddress) {
         this.inetSocketAddress = inetSocketAddress;

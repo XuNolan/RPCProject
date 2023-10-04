@@ -1,8 +1,11 @@
 package github.xunolan.rpcproject.registry;
 
+import github.xunolan.rpcproject.extension.SPI;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 
+@SPI
 public interface ServiceRegistry {
     // 服务名称和地址注册进服务注册中心；
     void register(String serviceName, InetSocketAddress inetSocketAddress);

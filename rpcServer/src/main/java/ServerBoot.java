@@ -1,8 +1,8 @@
 import github.xunolan.rpcproject.api.ServiceApi;
+import github.xunolan.rpcproject.extension.ExtensionLoader;
 import github.xunolan.rpcproject.netty.NettyServerInit;
 import github.xunolan.rpcproject.register.LocalServiceRecord;
 import github.xunolan.rpcproject.registry.ServiceRegistry;
-import github.xunolan.rpcproject.registry.impl.NacosServiceRegistry;
 import github.xunolan.rpcproject.service.impl.ServiceImpl;
 
 import java.net.InetSocketAddress;
@@ -13,7 +13,7 @@ public class ServerBoot {
         //注册服务至本地
         if(LocalServiceRecord.registerService(ServiceApi.class.getSimpleName(), ServiceImpl.class)){
             //注册服务至nacos；
-            ServiceRegistry serviceRegistry = new NacosServiceRegistry();
+            ServiceRegistry serviceRegistry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
             serviceRegistry.register(ServiceApi.class.getSimpleName(), inetSocketAddress);
             //初始化客户端；
             NettyServerInit RpcServer = new NettyServerInit(inetSocketAddress);

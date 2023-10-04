@@ -1,18 +1,18 @@
 import github.xunolan.rpcproject.api.ServiceApi;
 import cn.hutool.core.util.ObjectUtil;
+import github.xunolan.rpcproject.extension.ExtensionLoader;
 import github.xunolan.rpcproject.loadbalance.LoadBalancer;
 import github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance;
 import github.xunolan.rpcproject.netty.NettyClientInit;
 import github.xunolan.rpcproject.proxy.ProxyFactory;
 import github.xunolan.rpcproject.registry.ServiceRegistry;
-import github.xunolan.rpcproject.registry.impl.NacosServiceRegistry;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 
 public class ClientBoot {
     public static void main(String[] args) {
-        ServiceRegistry registry = new NacosServiceRegistry();
+        ServiceRegistry registry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
         List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
         LoadBalancer loadBalancer = new RandomLoadBalance();
         InetSocketAddress targetAddress = loadBalancer.getService(addresses);//这个负载均衡感觉也就是意思意思（）
