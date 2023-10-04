@@ -96,6 +96,7 @@
 在查看示例代码的过程中，跳到实现spi了。单纯看代码看不懂，还是需要落到外围用法中去。
 - 注意之后读源码过程中还是得遵照"理解需求"->"初始理解代码（可能看不懂）"->"找其他人的相同机制实现或者查看外围用法"->自己尝试实现并进行对比来理解这样设计的原因   这样的思路来处理。
 
+周三：
 首先实现jdk版本的spi。实现结果如下。
 ```
 KryoSerializer init
@@ -111,3 +112,53 @@ hhh0serverResponse
 [AppLog] 2023-10-04 18:30:09   [e5d1c50d-157b-4ad2-a1e4-0a6d20314d56] Ack server push request, request = NotifySubscriberRequest, requestId = 13
 ```
 仅在客户端完成了spi的逻辑。可以看到两个类都加载了，且客户端使用的是kryo序列化。
+
+其次开始逐步实现dubbo版本的spi。
+从基本逻辑开始，对比自己的实现与guide代码实现，获取了以下知识点和trick：
+- 在对两个static的map处理过程中有两点需要注意的：
+  - 必须putIfAbsent而不能单纯put。因为当时没有加锁。有可能另一线程抢先初始化了。
+    以及，在putIfAbsent之后也需要重新获取一次。否则稍后一些的线程返回的引用将与map中的引用不一致。这两部都是没有加锁导致的。
+  - static Map不需要双重锁是因为，重复加载也没有关系？因为代价比较小，而且加载（初始化的）只是原始类。
+    第一个static Map加载的是原始的ExtensionLoader对象；第二个是反射加载的Object；这些都是"只要其中一个可用就可以了，多加载一次也没关系"，也就是不需要保证"只加载一次"；
+    （不知道这样理解对不对）
+- 使用holder的目的是为了在value上包一层，使其具有volatile的特性，防止初始化对象时重排导致双重锁校验时返回无效的对象；
+- 双重锁校验的static本质是为了操作同一个对象，即保证单例。因此在存在Map的情况下，内部Holder包裹的Extension实例可以保证操作同一个，就不必（也不能）static了。
+- 双重锁校验的synchronized本质是为了使内部包裹的代码块只有一个线程能够进入。所以只要能够"锁住"，即不同线程操作的是同一个对象（spi机制中使用），或者类（双重锁校验的实例代码使用）都是可以的。
+
+附：之前看双重锁的总结：
+2. 单例模式双重锁
+```java
+public class penguin{
+	private static volatile penguin m_peguin = null;
+	private penguin(){}
+	public static penguin getInstance(){
+		if(m_penguin == null){
+			synchronized(penguin.class){
+				if(m_penguin==null){
+					m_penguin = new penguin();
+				}
+			}
+		}
+		return m_penguin;
+	}
+}
+```
+- 详解：
+    - 静态变量：保证单例；
+    - volatile修饰；
+    - 私有无参构造器：避免通过new初始化对象；
+    - 静态的getInstance:
+        - 第一个null判断：单例模式的逻辑，判断若空才进行首次初始化；
+        - synchronized加类锁：多线程环境下，同时只能有一个线程进入同步代码块；
+        - 同步代码块内部的二次验证（与volatile一起）：针对指令重排序场景的保证；如下：
+
+对象初始化实际为三步。第二步有可能与第三步互换；此时：
+- 先使实例指向地址，但未初始化对象；若此时另一线程进入到第二个null判断，发现非空，则会返回未初始化的对象；
+    - 因此：volatile修饰以防止重排；
+    - 第二次null验证防止在synchronized阻塞后获得锁时进行二次初始化；
+        - 为什么synchronized不把第一个null也囊括？效率问题。不可能所有线程在getInstance时都要争取一下锁；
+```
+a. memory = allocate() //分配内存
+b. ctorInstanc(memory) //初始化对象
+c. instance = memory //设置instance指向刚分配的地址
+```
