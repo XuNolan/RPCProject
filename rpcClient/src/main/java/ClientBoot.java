@@ -1,3 +1,4 @@
+
 import github.xunolan.rpcproject.api.ServiceApi;
 import cn.hutool.core.util.ObjectUtil;
 import github.xunolan.rpcproject.extension.ExtensionLoader;
@@ -13,9 +14,11 @@ import java.util.List;
 public class ClientBoot {
     public static void main(String[] args) {
         ServiceRegistry registry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
+        //服务发现 + 负载均衡
         List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
         LoadBalancer loadBalancer = new RandomLoadBalance();
         InetSocketAddress targetAddress = loadBalancer.getService(addresses);//这个负载均衡感觉也就是意思意思（）
+        //建立远端连接
         NettyClientInit nettyClient = new NettyClientInit(targetAddress);
         nettyClient.run();
         //根据泛型获取代理

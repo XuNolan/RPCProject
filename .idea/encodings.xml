@@ -5,8 +5,12 @@
     <file url="file://$PROJECT_DIR$/common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/rpcClient/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/rpcClient/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/rpcIoc/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/rpcIoc/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/rpcServer/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/rpcServer/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/rpcServerView/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/rpcServerView/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

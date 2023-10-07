@@ -105,3 +105,57 @@ SPI不是对服务提供者提供的服务进行选择，而是对所有客户�
 
 简单版本的spi完成。参照了javaguide。因为双重锁校验之前并不是特别熟练，也没有实操过。
 一些思考和思路全部写在这段时间commit代码的内部注释中了。之后回顾双重锁校验可以回顾这一块。
+
+
+再次回滚。最初是想实现使用注解进行服务端的服务注册与客户端的调用。达到以下效果：
+```java
+package github.xunolan.rpcproject;
+
+import cn.hutool.core.util.ObjectUtil;
+import github.xunolan.rpcproject.annotations.RpcReference;
+import github.xunolan.rpcproject.api.ServiceApi;
+
+@github.xunolan.rpcproject.annotations.RpcClient
+public class RpcClient {
+    //理想状态下的调用关系：
+    @RpcReference
+    private static ServiceApi service;
+
+    public static void main(String[] args) {
+        String result = service.hello("hhh", 0);
+        if (ObjectUtil.isNotNull(result))
+            System.out.println(result);
+        else
+            System.out.println("客户端调用有误");
+    }
+    //涉及bean的生命周期处理过程。需要在Bean依赖注入，要么就是初始化过程中将传统的对service这个Bean的初始化变成代理连接等一系列操作。
+    //或者分成两部分。新增RpcClient注解，在此注解中处理与服务端的连接？
+    //不好。还是统一在 RpcReferce。其他的尽量对客户端不可见。
+    //或者说，在RpcClient内部负责定义不同的负载均衡策略等？以及也像之前那样RpcClient定义扫描的包，只处理包内部注解了RpcReference的成员？
+    //回来。这里的本质相当于在service外面的bean初始化过程中又包了一层代理，或者说将获取代理的步骤封装到注解处理函数内部了。
+}
+```
+之前模模糊糊是感觉 对Spring中的Bean生命周期以及各钩子函数不是特别了解。学长建议是直接自己实现一个IOC。
+重新看了一遍Bean注册和依赖注入过程，以及完全理解了循环依赖，重新试图自己实现一个IOC。
+
+ioc重要的几点包括：
+- IOC如何对不同的Bean配置进行解析和加载；
+  - 这里包括需要获取和存放哪些Bean的参数，即BeanDefinition包括哪些属性。另一方面包括如何将配置文件转换为BeanDefinition
+    - BeanDefinition和BeanDefinitionRegistry和BeanDefinitionReader；
+    - 以及包括ApplicationContext的接口实现类，定义了将不同Bean的配置方式进行不同的资源加载。
+- IOC如何根据BeanDefinition定义生成Bean实例，并放置在容器内部；
+  - 基础的包括Bean如何根据BeanDefinition生成实例，还有包括Bean依赖注入。还有Bean嵌套和缓存。
+    - BeanFactory的部分？或者说是ApplicationContext？
+- 外界如何获取容器中的Bean。
+  - 注解、或者其他自动扫描注入等，根据名字或类的类型等。
+    - BeanFactory
+
+对于第一点，使用注解方式进行。依赖注入的使用Autowired、注册的使用Component。Autowired默认使用byType。结合Qualifier则为byName;
+先实现Bean注册。
+
+吃了个饭 路上思考了一下。其实IOC的本质就是扫描注解->提取信息转换为beanDefinition，放到BeanFactory->BeanFactory在容器初始化过程中对Bean进行实例化->引入Bean的生命周期、依赖注入等进行处理；
+因此也就是说，并不需要按照spring的那样实现ioc。完全可以针对RPCService等等一系列注解去实现对rpc本项目特化的。重点只是说能使本框架去控制对象的生成，而对使用框架的客户不可见。
+从服务端开始。
+服务端需要对框架不可见的服务提供者，提供服务注册功能和客户端TCP连接功能。RpcServer提供扫描的服务包、host的ip和port。
+内部提供的服务为RpcService。
+
