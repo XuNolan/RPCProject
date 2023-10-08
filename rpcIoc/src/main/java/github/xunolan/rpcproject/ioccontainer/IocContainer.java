@@ -1,29 +1,15 @@
-package github.xunolan.rpcproject;
+package github.xunolan.rpcproject.ioccontainer;
 
-import com.fasterxml.jackson.databind.introspect.Annotated;
 import github.xunolan.rpcproject.annotation.PackageScan;
-import github.xunolan.rpcproject.annotation.client.RpcClient;
-import github.xunolan.rpcproject.annotation.server.RpcServer;
-import github.xunolan.rpcproject.api.ServiceApi;
 import github.xunolan.rpcproject.definition.BeanDefinition;
-import github.xunolan.rpcproject.definition.ClientBeanDefinition;
-import github.xunolan.rpcproject.definition.ServiceBeanDefinition;
-import github.xunolan.rpcproject.extension.ExtensionLoader;
-import github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance;
-import github.xunolan.rpcproject.netty.NettyClientInit;
-import github.xunolan.rpcproject.netty.NettyServerInit;
-import github.xunolan.rpcproject.register.LocalServiceRecord;
+import github.xunolan.rpcproject.factory.BeanFactory;
 import github.xunolan.rpcproject.registry.BeanRegistry;
-import github.xunolan.rpcproject.registry.ClientBeanRegistry;
 import github.xunolan.rpcproject.registry.ServiceBeanRegistry;
-import github.xunolan.rpcproject.registry.ServiceRegistry;
 import github.xunolan.rpcproject.utils.ClassUtil;
 
 import java.lang.annotation.Annotation;
-import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class IocContainer {
     /*
@@ -40,6 +26,9 @@ public abstract class IocContainer {
 
     private Class<?> clazz;
     private String[] scanPackages;
+    protected BeanRegistry beanRegistry;
+    protected BeanFactory beanFactory;
+
     public IocContainer(Class<?> clazz){
         this.clazz = clazz;
     }
@@ -50,35 +39,18 @@ public abstract class IocContainer {
         } else {
             this.scanPackages = new String[]{this.clazz.getPackage().getName()};//当前类路径
         }
-        BeanRegistry.scanAnnotations(scanPackages);
+        //现在的首要问题是将Client的ioc容器和Server的ioc容器区分清楚。client的ioc容器更加复杂。先写client的。
+        //注册Bean。
+        initBeanRegistry(scanPackages);
+        //初始化BeanFactory
+        initBeanFactory(beanRegistry.getBeanDefinitions());
         
-
-
-
-
-
-
         return this;
+
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    abstract void initBeanRegistry(String[] scanPackages);
+    abstract void initBeanFactory(Set<BeanDefinition> beanDefinitions);
 
 
 

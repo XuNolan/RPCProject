@@ -19,6 +19,12 @@ import java.util.stream.Collectors;
 public class ClassUtil {
     private static Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+    public static Set<Class<?>> getInnotedClasses(String packageName, Class<? extends Annotation> clazz){
+        return ClassUtil.getAllClasses(packageName).stream().filter(x -> {
+            Annotation annotation = x.getAnnotation(clazz);
+            return annotation!=null;
+        }).collect(Collectors.toSet());
+    }
     //获取包下的所有类
     public static Set<Class<?>> getAllClasses(String packageName) {
         logger.info(packageName);

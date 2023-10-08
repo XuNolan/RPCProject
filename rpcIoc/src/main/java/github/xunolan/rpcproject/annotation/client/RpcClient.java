@@ -8,7 +8,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RpcClient {
-    String[] ServicePacketScan();
-    //todo: 负载均衡策略？
-
 }
