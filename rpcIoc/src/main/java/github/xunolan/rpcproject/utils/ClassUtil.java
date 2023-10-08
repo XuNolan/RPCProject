@@ -18,23 +18,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ClassUtil {
     private static Logger logger = LoggerFactory.getLogger(ClassUtil.class);
-    public static Set<Class<?>> getRpcServiceInnotedClasses(String packageName){
-        return getAllClasses(packageName).stream().filter( x -> {
-            Annotation annotation = x.getAnnotation(RpcService.class);
-            return annotation!=null;
-        }).collect(Collectors.toSet());
-    }
-    public static Set<Class<?>> getRpcReferenceInnotedClasses(String packageName){
-        return getAllClasses(packageName).stream().filter( x -> {
-            Field[] fields = x.getDeclaredFields();
-            for (Field field : fields){
-                if (field.isAnnotationPresent(RpcReference.class))
-                    return true;
-            }
-            return false;
-        }).collect(Collectors.toSet());
-    }
-
 
     //获取包下的所有类
     public static Set<Class<?>> getAllClasses(String packageName) {
