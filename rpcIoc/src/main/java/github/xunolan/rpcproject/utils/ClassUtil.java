@@ -1,5 +1,6 @@
 package github.xunolan.rpcproject.utils;
 
+import github.xunolan.rpcproject.annotation.client.RpcReference;
 import github.xunolan.rpcproject.annotation.server.RpcService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.*;
@@ -16,6 +18,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ClassUtil {
     private static Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+    public static Set<Class<?>> getRpcServiceInnotedClasses(String packageName){
+        return getAllClasses(packageName).stream().filter( x -> {
+            Annotation annotation = x.getAnnotation(RpcService.class);
+            return annotation!=null;
+        }).collect(Collectors.toSet());
+    }
+    public static Set<Class<?>> getRpcReferenceInnotedClasses(String packageName){
+        return getAllClasses(packageName).stream().filter( x -> {
+            Field[] fields = x.getDeclaredFields();
+            for (Field field : fields){
+                if (field.isAnnotationPresent(RpcReference.class))
+                    return true;
+            }
+            return false;
+        }).collect(Collectors.toSet());
+    }
+
+
     //获取包下的所有类
     public static Set<Class<?>> getAllClasses(String packageName) {
         logger.info(packageName);
@@ -40,7 +60,6 @@ public class ClassUtil {
         }
         return classes;
     }
-
 
     private static void findAndAddClassesInPackageByFile(String packageName, String packagePath, Set<Class<?>> classes) {
         // 获取此包的目录 建立一个File
@@ -70,10 +89,10 @@ public class ClassUtil {
         }
     }
 
-    public static Set<Class<?>> getRpcServiceInnoClasses(String packageName){
-        return getAllClasses(packageName).stream().filter( x -> {
-            Annotation annotation = x.getAnnotation(RpcService.class);
-            return annotation!=null;
-        }).collect(Collectors.toSet());
-    }
+
+
+
+
+
+
 }

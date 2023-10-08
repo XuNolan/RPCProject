@@ -108,33 +108,7 @@ SPI不是对服务提供者提供的服务进行选择，而是对所有客户�
 
 
 再次回滚。最初是想实现使用注解进行服务端的服务注册与客户端的调用。达到以下效果：
-```java
-package github.xunolan.rpcproject;
 
-import cn.hutool.core.util.ObjectUtil;
-import github.xunolan.rpcproject.annotations.RpcReference;
-import github.xunolan.rpcproject.api.ServiceApi;
-
-@github.xunolan.rpcproject.annotations.RpcClient
-public class RpcClient {
-    //理想状态下的调用关系：
-    @RpcReference
-    private static ServiceApi service;
-
-    public static void main(String[] args) {
-        String result = service.hello("hhh", 0);
-        if (ObjectUtil.isNotNull(result))
-            System.out.println(result);
-        else
-            System.out.println("客户端调用有误");
-    }
-    //涉及bean的生命周期处理过程。需要在Bean依赖注入，要么就是初始化过程中将传统的对service这个Bean的初始化变成代理连接等一系列操作。
-    //或者分成两部分。新增RpcClient注解，在此注解中处理与服务端的连接？
-    //不好。还是统一在 RpcReferce。其他的尽量对客户端不可见。
-    //或者说，在RpcClient内部负责定义不同的负载均衡策略等？以及也像之前那样RpcClient定义扫描的包，只处理包内部注解了RpcReference的成员？
-    //回来。这里的本质相当于在service外面的bean初始化过程中又包了一层代理，或者说将获取代理的步骤封装到注解处理函数内部了。
-}
-```
 之前模模糊糊是感觉 对Spring中的Bean生命周期以及各钩子函数不是特别了解。学长建议是直接自己实现一个IOC。
 重新看了一遍Bean注册和依赖注入过程，以及完全理解了循环依赖，重新试图自己实现一个IOC。
 
@@ -159,3 +133,44 @@ ioc重要的几点包括：
 服务端需要对框架不可见的服务提供者，提供服务注册功能和客户端TCP连接功能。RpcServer提供扫描的服务包、host的ip和port。
 内部提供的服务为RpcService。
 
+```java
+
+import github.xunolan.rpcproject.api.ServiceApi;
+import cn.hutool.core.util.ObjectUtil;
+import github.xunolan.rpcproject.extension.ExtensionLoader;
+import github.xunolan.rpcproject.loadbalance.LoadBalancer;
+import github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance;
+import github.xunolan.rpcproject.netty.NettyClientInit;
+import github.xunolan.rpcproject.proxy.ProxyFactory;
+import github.xunolan.rpcproject.registry.ServiceRegistry;
+
+import java.net.InetSocketAddress;
+import java.util.List;
+
+public class ClientBoot {
+    public static void main(String[] args) {
+        ServiceRegistry registry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
+        //服务发现 + 负载均衡
+        List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
+        LoadBalancer loadBalancer = new RandomLoadBalance();
+        InetSocketAddress targetAddress = loadBalancer.getService(addresses);//这个负载均衡感觉也就是意思意思（）
+        //建立远端连接
+        NettyClientInit nettyClient = new NettyClientInit(targetAddress);
+        nettyClient.run();
+        //根据泛型获取代理
+        ServiceApi service = new ProxyFactory<ServiceApi>().getProxy(ServiceApi.class, nettyClient);
+        String result = service.hello("hhh",0);
+        if(ObjectUtil.isNotNull(result))
+            System.out.println(result);
+        else
+            System.out.println("客户端调用有误");
+    }
+}
+
+```
+客户端相比服务端存在的一个额外问题是，如何对成员进行依赖注入。
+我能够生成bean，如何通过注解进行返回？在注解处理函数中保留引用？不对。这里应该涉及到的知识点是"依赖注入"。一种讨巧的方法是通过setter进行依赖注入。这样的话就不需要针对再外一层的Bean进行维护。
+如果想要通过注解方式（field方式）实现依赖注入呢？这样也不是构造器方式的依赖注入？
+所以说Spring是怎么处理的？内部需要依赖注入的对象，其本身也不一定是Bean啊？
+- 不行。Spring的话，必须是交给Spring的IOC容器来管理的类，才能进行依赖注入。否则需要用户自行实现相关的反射代码自行注入。
+- 
