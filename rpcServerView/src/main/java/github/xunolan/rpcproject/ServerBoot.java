@@ -11,6 +11,6 @@ import github.xunolan.rpcproject.ioccontainer.ServerIocContainer;
 @Component
 public class ServerBoot {
     public static void main(String[] args) {
-        IocContainer iocContainer = new ServerIocContainer(ServerBoot.class).initIocContainer().run();
+        IocContainer iocContainer = new ServerIocContainer(ServerBoot.class).initIocContainer();
     }
 }

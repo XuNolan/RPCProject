@@ -27,23 +27,15 @@ public abstract class IocContainer {
 
     public IocContainer(Class<?> clazz){
         this.clazz = clazz;
+        initBeanRegistry();
+        initBeanFactory();
     }
     public IocContainer initIocContainer(){
-        //扫描和处理注解，并进行注解实例化。
         if(this.clazz.isAnnotationPresent(PackageScan.class)){
             this.scanPackages = this.clazz.getAnnotation(PackageScan.class).Packages();
         } else {
             this.scanPackages = new String[]{this.clazz.getPackage().getName()};//当前类路径
         }
-        //现在的首要问题是将Client的ioc容器和Server的ioc容器区分清楚。client的ioc容器更加复杂。先写client的。
-        //注册Bean。
-        initBeanRegistry(scanPackages);
-        //初始化BeanFactory
-        initBeanFactory(beanRegistry.getBeanDefinitions());
-        return this;
-    }
-
-    public IocContainer run(){
         //RpcClient与RpcServer注解可要可不要。实际通过iocContainer实例化的类型来区分；
         if(this instanceof ClientIocContainer){
             String serviceDiscovery = "nacos";
@@ -60,8 +52,11 @@ public abstract class IocContainer {
             //建立远端连接
             NettyClientInit nettyClient = new NettyClientInit(targetAddress);
             nettyClient.run();
-
+            beanRegistry.registerBean(scanPackages);
+            beanFactory.beanInitialize(beanRegistry.getBeanDefinitions());
         }else if(this instanceof ServerIocContainer){
+            beanRegistry.registerBean(scanPackages);
+            beanFactory.beanInitialize(beanRegistry.getBeanDefinitions());
             InetSocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1",9999);
             if(this.clazz.isAnnotationPresent(RpcService.class)){
                 RpcServer anno = this.clazz.getAnnotation(RpcServer.class);
@@ -69,7 +64,7 @@ public abstract class IocContainer {
             }
             ServiceRegistry serviceRegistry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
             InetSocketAddress finalInetSocketAddress = inetSocketAddress;
-            this.beanFactory.singletonObject.keySet().forEach(
+            BeanFactory.singletonObject.keySet().forEach(
                     x -> serviceRegistry.register(x, finalInetSocketAddress)
             );
             NettyServerInit nettyServer = new NettyServerInit(inetSocketAddress);
@@ -78,8 +73,8 @@ public abstract class IocContainer {
         return this;
     }
 
-    abstract void initBeanRegistry(String[] scanPackages);
-    abstract void initBeanFactory(Set<BeanDefinition> beanDefinitions);
+    abstract void initBeanRegistry();
+    abstract void initBeanFactory();
     public BeanFactory getBeanFactory(){
         return this.beanFactory;
     }

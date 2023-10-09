@@ -12,14 +12,19 @@ public class LocalServiceRecord {
     public static Boolean registerService(String name, Class<?> serviceClass, Object instance){
         if(serviceMap.containsKey(name))
             return false;
-        serviceMap.put(name, serviceClass);
-        singletonObject.put(name, instance);
+        serviceMap.put(name, serviceClass);//api, apiimpl.class
+        singletonObject.put(name, instance);//api, apiimpl.instance
         return true;
     }
     public static Class<?> getService(String name){
         if(!serviceMap.containsKey(name))
             return null;
         return serviceMap.get(name);
+    }
+    public static Object getServiceInstanceByName(String name){
+        if(!serviceMap.containsKey(name))
+            return null;
+        return singletonObject.get(name);
     }
     public static <T> T getServiceInstance(Class<T> clazz){
         if(!singletonObject.containsKey(clazz.getName())){

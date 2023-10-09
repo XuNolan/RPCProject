@@ -21,7 +21,7 @@ public class NettyClientInit {
     private final Logger log = LoggerFactory.getLogger(NettyClientInit.class);
     private final Bootstrap bootstrap = new Bootstrap();
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-    private Channel channel;
+    private static Channel channel;
     private final SocketAddress socketAddress;
     private final Serializer serializer;
 
@@ -56,7 +56,7 @@ public class NettyClientInit {
             throw new RpcException(ExceptionEnum.RpcClientInitFail, e);
         }
     }
-    public Channel getChannel(){
+    public static Channel getChannel(){
         return channel;
     }
 

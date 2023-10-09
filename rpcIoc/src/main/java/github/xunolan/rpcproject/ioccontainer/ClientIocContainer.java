@@ -13,15 +13,15 @@ public class ClientIocContainer extends IocContainer {
     }
 
     @Override
-    void initBeanRegistry(String[] scanPackages) {
+    void initBeanRegistry() {
         super.beanRegistry = new ClientBeanRegistry(); //引入基类的目的是将client和Server的BeanRegistry与BeanDefinition都区分开，对IOC基类不可见；
-        beanRegistry.registerBean(scanPackages);
+        //beanRegistry.registerBean(scanPackages);
     }
 
     @Override
-    void initBeanFactory(Set<BeanDefinition> beanDefinitions) {
-        super.beanFactory = new ClientBeanFactory(beanDefinitions);
-        beanFactory.beanInitialize();
+    void initBeanFactory() {
+        super.beanFactory = new ClientBeanFactory();
+        //beanFactory.beanInitialize();
     }
 
 }

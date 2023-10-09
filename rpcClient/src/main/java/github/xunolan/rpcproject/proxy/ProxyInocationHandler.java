@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 public class ProxyInocationHandler implements InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(ProxyInocationHandler.class);
-    private static Channel channel = null;
+    private static Channel channel = NettyClientInit.getChannel();
     private final Class<?> clazz;
 
     public ProxyInocationHandler(Class<?> clazz){
@@ -29,7 +29,7 @@ public class ProxyInocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
         RpcRequest rpcRequest = new RpcRequest(
-                SnowflakeUtil.getSnowflakeId(), clazz.getSimpleName(),
+                SnowflakeUtil.getSnowflakeId(), clazz.getName(),
                 method.getName(), method.getParameterTypes(), args);
 
         if(channel.isActive()) {

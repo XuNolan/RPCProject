@@ -19,7 +19,7 @@ public class ClientBoot {
     public ServiceApi service; //todo
 
     public static void main(String[] args) {
-        IocContainer iocContainer = new ClientIocContainer(ClientBoot.class).initIocContainer().run();
+        IocContainer iocContainer = new ClientIocContainer(ClientBoot.class).initIocContainer();
 
         //使用
         ClientBoot clientBoot = (ClientBoot)iocContainer.getBeanFactory().getBean(ClientBoot.class.getName());

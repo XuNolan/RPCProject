@@ -14,15 +14,15 @@ public class ServerIocContainer extends IocContainer {
     }
 
     @Override
-    void initBeanRegistry(String[] scanPackages) {//todo 优化
+    void initBeanRegistry() {//todo 优化
         super.beanRegistry = new ServerBeanRegistry();
-        super.beanRegistry.registerBean(scanPackages);
+        //super.beanRegistry.registerBean(scanPackages);
     }
 
     @Override
-    void initBeanFactory(Set<BeanDefinition> beanDefinitions) {
-        super.beanFactory = new ServerBeanFactory(beanDefinitions);
-        beanFactory.beanInitialize();
+    void initBeanFactory() {
+        super.beanFactory = new ServerBeanFactory();
+        //beanFactory.beanInitialize();
     }
 
 }

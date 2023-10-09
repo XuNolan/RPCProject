@@ -3,6 +3,7 @@ package github.xunolan.rpcproject.factory;
 import github.xunolan.rpcproject.annotation.Autowired;
 import github.xunolan.rpcproject.annotation.client.RpcReference;
 import github.xunolan.rpcproject.definition.BeanDefinition;
+import github.xunolan.rpcproject.netty.NettyClientInit;
 import github.xunolan.rpcproject.proxy.ProxyFactory;
 
 import java.lang.reflect.Field;
@@ -10,11 +11,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 public class ClientBeanFactory extends BeanFactory {
-    public ClientBeanFactory(Set<BeanDefinition> beanDefinitions) {
-        super(beanDefinitions);
-    }
 
-    public void beanInitialize() {
+    public void beanInitialize(Set<BeanDefinition> beanDefinitions) {
+        beanDefinitions.stream().forEach( x -> this.beanDefinitions.put(x.clazz, x));
         for (BeanDefinition beanDefinition : super.beanDefinitions.values()) {
             singletonObject.putIfAbsent(beanDefinition.clazz.getName(), getBean(beanDefinition.clazz, beanDefinition.clazz.getName()));
         }

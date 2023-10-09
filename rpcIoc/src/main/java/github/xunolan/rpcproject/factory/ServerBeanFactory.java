@@ -7,12 +7,10 @@ import github.xunolan.rpcproject.register.LocalServiceRecord;
 import java.util.Set;
 
 public class ServerBeanFactory extends BeanFactory{
-    public ServerBeanFactory(Set<BeanDefinition> beanDefinitions) {
-        super(beanDefinitions);
-    }
     //这里解决的是server的单例bean工厂；也就是说，仅处理RpcService。
     @Override
-    public void beanInitialize() {
+    public void beanInitialize(Set<BeanDefinition> beanDefinitions) {
+        beanDefinitions.stream().forEach( x -> this.beanDefinitions.put(x.clazz, x));
         for (BeanDefinition beanDefinition : super.beanDefinitions.values()) {
             Object instance = getBean(beanDefinition.clazz, beanDefinition.clazz.getName());
             Class<?> impService = beanDefinition.clazz.getAnnotation(RpcService.class).ImplementClazz();
