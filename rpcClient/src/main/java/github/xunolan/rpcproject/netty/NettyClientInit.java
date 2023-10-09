@@ -56,7 +56,7 @@ public class NettyClientInit {
             throw new RpcException(ExceptionEnum.RpcClientInitFail, e);
         }
     }
-    public Channel getChannel(){
+    public static Channel getChannel(){
         return channel;
     }
 

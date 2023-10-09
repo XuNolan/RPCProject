@@ -6,11 +6,11 @@ import java.lang.reflect.Proxy;
 
 
 public class ProxyFactory<T> {
-    public T getProxy(Class<T> clazz, NettyClientInit nettyClient){
+    public T getProxy(Class<T> clazz){
         Object proxyResult = Proxy.newProxyInstance(
                 clazz.getClassLoader(),
                 new Class[]{clazz},
-                new ProxyInocationHandler(clazz,  nettyClient.getChannel())
+                new ProxyInocationHandler(clazz)
         );
         return clazz.cast(proxyResult);
     }

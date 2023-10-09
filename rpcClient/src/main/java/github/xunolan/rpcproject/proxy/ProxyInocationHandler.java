@@ -5,6 +5,7 @@ import github.xunolan.rpcproject.dto.RpcResponse;
 import github.xunolan.rpcproject.enums.ExceptionEnum;
 import github.xunolan.rpcproject.enums.ResCodeEnum;
 import github.xunolan.rpcproject.exception.RpcException;
+import github.xunolan.rpcproject.netty.NettyClientInit;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +19,11 @@ import java.util.concurrent.ExecutionException;
 
 public class ProxyInocationHandler implements InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(ProxyInocationHandler.class);
+    private static Channel channel = NettyClientInit.getChannel();
     private final Class<?> clazz;
-    private final Channel channel;
 
-    public ProxyInocationHandler(Class<?> clazz, Channel channel){
+    public ProxyInocationHandler(Class<?> clazz){
         this.clazz = clazz;
-        this.channel = channel;
     }
 
     @Override

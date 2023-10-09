@@ -1,0 +1,2 @@
+random=github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance
+round=github.xunolan.rpcproject.loadbalance.impl.RoundLoadBalance

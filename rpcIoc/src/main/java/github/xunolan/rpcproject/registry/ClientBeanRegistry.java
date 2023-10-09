@@ -20,31 +20,14 @@ public class ClientBeanRegistry extends BeanRegistry{
         for(String pkg : packages) {
             componentAnnotedSet.addAll(ClassUtil.getInnotedClasses(pkg, Component.class));
         }
-        //初始化所有Component的BeanDefinition。记录内部若有Autowired和RpcReference的则记录在BeanDefinition内部待进行依赖注入。
+        //初始化所有Component的BeanDefinition。
         //规定RpcReference的不会依赖其他Bean。
+        //内部是有Autowired还是RpcService的留待ClientBeanFactory进行扫描。
         for (Class<?> clazz : componentAnnotedSet) {
             BeanDefinition beanDefinition = new BeanDefinition();
             beanDefinition.clazz = clazz;
-            Method[] methods = clazz.getDeclaredMethods();
-            for(Method method : methods){
-                if(method.isAnnotationPresent(Autowired.class)){
-                    BeanDefinition fieldBeanDefinition = new BeanDefinition();
-                    //假设set只会setAutowired的方法；
-                    fieldBeanDefinition.clazz = method.getParameterTypes()[0];//自己的clazz
-                    fieldBeanDefinition.method = method;
-                    beanDefinition.autowired.put(method.getName(), fieldBeanDefinition);//map的key是不是还可以考虑一下。暂时还没啥用。也许之后Qualifier有用。
-                }
-                if(method.isAnnotationPresent(RpcReference.class)){
-                    ProxyBeanDefinition fieldProxyBeanDefinition = ProxyBeanDefinition.fromInnotedClassAndField(clazz, method);
-                    beanDefinition.rpcReferenced.put(method.getName(), fieldProxyBeanDefinition);
-                }
-            }
+            //todo： 根据之后实例化过程需要的数据再说；
             beanDefinitions.add(beanDefinition);
         }
-
-
     }
-
-
-
 }

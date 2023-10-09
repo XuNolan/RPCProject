@@ -1,8 +1,12 @@
 package github.xunolan.rpcproject.factory;
 
+import github.xunolan.rpcproject.annotation.Autowired;
+import github.xunolan.rpcproject.annotation.client.RpcReference;
 import github.xunolan.rpcproject.definition.BeanDefinition;
 import github.xunolan.rpcproject.definition.ProxyBeanDefinition;
+import github.xunolan.rpcproject.proxy.ProxyFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -12,10 +16,7 @@ import java.util.Set;
 public class ClientBeanFactory extends BeanFactory {
     //本Factory缓存所有已构造好的Bean；
     //需要设计一下缓存的结构；
-    //一级缓存
-    private static Map<String, Object> singletonObject = new HashMap<>();//key暂时使用BeanName？BeanName是什么？全类名？
-    //二级缓存。缓存原始对象？暂且不考虑循环依赖。
-    //private static Map<String, Object> earlySingletonObject = new HashMap<>();
+
 
 
     public ClientBeanFactory(Set<BeanDefinition> beanDefinitions) {
@@ -24,32 +25,39 @@ public class ClientBeanFactory extends BeanFactory {
 
     public void beanInitialize() {
         for (BeanDefinition beanDefinition : super.beanDefinitions.values()) {
-            singletonObject.put(beanDefinition.clazz.getName(), getBean(beanDefinition.clazz));
-
+            singletonObject.put(beanDefinition.clazz.getName(), getBean(beanDefinition.clazz, beanDefinition.clazz.getName()));
         }
     }
 
-    public <T> T getBean(Class<T> clazz) {
+    public <T> T getBean(Class<T> clazz, String beanName) { //beanName暂且使用全类名。todo：有没有问题？
+        if(singletonObject.containsKey(beanName)){
+            // 缓存中已有，直接返回。
+            // 其实对于最外层的Component注解的Bean，这里绝对不会命中。
+            // 只是为了在依赖注入过程中给注入的依赖使用的单例。
+            return clazz.cast(singletonObject.get(beanName));
+        }
         //构造原始对象
         BeanDefinition beanDefinition = super.beanDefinitions.get(clazz);
         try {
             Object object = beanDefinition.clazz.getConstructor().newInstance();//默认有无参构造器
-            //暂且不考虑循环依赖。
-            //依赖注入
-            for(Map.Entry<String, BeanDefinition> entry : beanDefinition.autowired.entrySet()){
-                Method method = entry.getValue().method;
-                Object toInject = getBean(entry.getValue().clazz);
-                method.invoke(object, toInject);
+            Field[] fields = beanDefinition.clazz.getFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                if (field.isAnnotationPresent(Autowired.class)) {
+                    Object dep = getBean(field.getType(), field.getType().getName());//获取普通对象
+                    //将这个依赖注入进去；
+                    field.set(object, dep);
+                } else if(field.isAnnotationPresent(RpcReference.class)) {
+                    T rpcProxy = new ProxyFactory<T>().getProxy((Class<T>) field.getType());//调用ProxyFactory获取代理对象。
+                    field.set(object, rpcProxy);
+                }
             }
-            for(Map.Entry<String, ProxyBeanDefinition> entry : beanDefinition.rpcReferenced.entrySet()){
-                //注入代理
-            }
-            //初始化（？）
+            return clazz.cast(object);
+            //todo : 初始化（？）不确定怎么处理基本变量的初始化。调用构造函数？
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
-
-
+        return null;
     }
 }
 

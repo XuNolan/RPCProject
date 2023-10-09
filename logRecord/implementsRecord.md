@@ -133,41 +133,6 @@ ioc重要的几点包括：
 服务端需要对框架不可见的服务提供者，提供服务注册功能和客户端TCP连接功能。RpcServer提供扫描的服务包、host的ip和port。
 内部提供的服务为RpcService。
 
-```java
-
-import github.xunolan.rpcproject.api.ServiceApi;
-import cn.hutool.core.util.ObjectUtil;
-import github.xunolan.rpcproject.extension.ExtensionLoader;
-import github.xunolan.rpcproject.loadbalance.LoadBalancer;
-import github.xunolan.rpcproject.loadbalance.impl.RandomLoadBalance;
-import github.xunolan.rpcproject.netty.NettyClientInit;
-import github.xunolan.rpcproject.proxy.ProxyFactory;
-import github.xunolan.rpcproject.registry.ServiceRegistry;
-
-import java.net.InetSocketAddress;
-import java.util.List;
-
-public class ClientBoot {
-    public static void main(String[] args) {
-        ServiceRegistry registry = ExtensionLoader.getExtensionLoader(ServiceRegistry.class).getExtension("nacos");
-        //服务发现 + 负载均衡
-        List<InetSocketAddress> addresses = registry.lookUpService(ServiceApi.class.getSimpleName());
-        LoadBalancer loadBalancer = new RandomLoadBalance();
-        InetSocketAddress targetAddress = loadBalancer.getService(addresses);//这个负载均衡感觉也就是意思意思（）
-        //建立远端连接
-        NettyClientInit nettyClient = new NettyClientInit(targetAddress);
-        nettyClient.run();
-        //根据泛型获取代理
-        ServiceApi service = new ProxyFactory<ServiceApi>().getProxy(ServiceApi.class, nettyClient);
-        String result = service.hello("hhh",0);
-        if(ObjectUtil.isNotNull(result))
-            System.out.println(result);
-        else
-            System.out.println("客户端调用有误");
-    }
-}
-
-```
 客户端相比服务端存在的一个额外问题是，如何对成员进行依赖注入。
 我能够生成bean，如何通过注解进行返回？在注解处理函数中保留引用？不对。这里应该涉及到的知识点是"依赖注入"。一种讨巧的方法是通过setter进行依赖注入。这样的话就不需要针对再外一层的Bean进行维护。
 如果想要通过注解方式（field方式）实现依赖注入呢？这样也不是构造器方式的依赖注入？

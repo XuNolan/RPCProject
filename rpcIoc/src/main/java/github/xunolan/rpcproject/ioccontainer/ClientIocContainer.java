@@ -21,7 +21,7 @@ public class ClientIocContainer extends IocContainer {
     @Override
     void initBeanFactory(Set<BeanDefinition> beanDefinitions) {
         super.beanFactory = new ClientBeanFactory(beanDefinitions);
-
+        beanFactory.beanInitialize();
     }
 
 }
