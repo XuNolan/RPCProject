@@ -1,4 +1,4 @@
-package service.impl;
+package github.xunolan.rpcproject.service.impl;
 
 import github.xunolan.rpcproject.annotation.server.RpcService;
 import github.xunolan.rpcproject.api.ServiceApi;

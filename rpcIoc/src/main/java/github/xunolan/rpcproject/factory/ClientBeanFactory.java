@@ -3,29 +3,20 @@ package github.xunolan.rpcproject.factory;
 import github.xunolan.rpcproject.annotation.Autowired;
 import github.xunolan.rpcproject.annotation.client.RpcReference;
 import github.xunolan.rpcproject.definition.BeanDefinition;
-import github.xunolan.rpcproject.definition.ProxyBeanDefinition;
 import github.xunolan.rpcproject.proxy.ProxyFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class ClientBeanFactory extends BeanFactory {
-    //本Factory缓存所有已构造好的Bean；
-    //需要设计一下缓存的结构；
-
-
-
     public ClientBeanFactory(Set<BeanDefinition> beanDefinitions) {
         super(beanDefinitions);
     }
 
     public void beanInitialize() {
         for (BeanDefinition beanDefinition : super.beanDefinitions.values()) {
-            singletonObject.put(beanDefinition.clazz.getName(), getBean(beanDefinition.clazz, beanDefinition.clazz.getName()));
+            singletonObject.putIfAbsent(beanDefinition.clazz.getName(), getBean(beanDefinition.clazz, beanDefinition.clazz.getName()));
         }
     }
 

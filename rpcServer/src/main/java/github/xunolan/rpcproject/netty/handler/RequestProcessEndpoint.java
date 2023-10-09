@@ -25,7 +25,7 @@ public class RequestProcessEndpoint extends ChannelDuplexHandler {
         Class<?> clazz = LocalServiceRecord.getService(rpcRequest.getClassName());
         //空结果不应当报错。而是应当直接返回空结果。不是异常。
         if(ObjectUtil.isNotNull(clazz) && clazz != null) {
-            Object object = clazz.newInstance();
+            Object object = LocalServiceRecord.getServiceInstance(clazz);
             Method method = clazz.getMethod(rpcRequest.getMethodName(), rpcRequest.getParamType());
             if(ObjectUtil.isNotNull(method)){
                 Object invokeResult = method.invoke(object, rpcRequest.getParamValue());

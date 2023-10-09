@@ -2,9 +2,7 @@ package github.xunolan.rpcproject.registry;
 
 import github.xunolan.rpcproject.annotation.Autowired;
 import github.xunolan.rpcproject.annotation.Component;
-import github.xunolan.rpcproject.annotation.client.RpcReference;
 import github.xunolan.rpcproject.definition.BeanDefinition;
-import github.xunolan.rpcproject.definition.ProxyBeanDefinition;
 import github.xunolan.rpcproject.utils.ClassUtil;
 
 import java.lang.reflect.Method;

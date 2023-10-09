@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 public class ProxyInocationHandler implements InvocationHandler {
     private static final Logger log = LoggerFactory.getLogger(ProxyInocationHandler.class);
-    private static Channel channel = NettyClientInit.getChannel();
+    private static Channel channel = null;
     private final Class<?> clazz;
 
     public ProxyInocationHandler(Class<?> clazz){

@@ -8,10 +8,12 @@ import java.util.Map;
 @NoArgsConstructor
 public class LocalServiceRecord {
     private static final Map<String, Class<?>> serviceMap = new HashMap<>();//name-object;
-    public static Boolean registerService(String name, Class<?> serviceClass){
+    private static final Map<String, Object> singletonObject = new HashMap<>();
+    public static Boolean registerService(String name, Class<?> serviceClass, Object instance){
         if(serviceMap.containsKey(name))
             return false;
         serviceMap.put(name, serviceClass);
+        singletonObject.put(name, instance);
         return true;
     }
     public static Class<?> getService(String name){
@@ -19,5 +21,10 @@ public class LocalServiceRecord {
             return null;
         return serviceMap.get(name);
     }
-
+    public static <T> T getServiceInstance(Class<T> clazz){
+        if(!singletonObject.containsKey(clazz.getName())){
+            return null;
+        }
+        return clazz.cast(singletonObject.get(clazz.getName()));
+    }
 }
