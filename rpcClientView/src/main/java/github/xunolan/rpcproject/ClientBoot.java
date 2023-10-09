@@ -10,9 +10,12 @@ import github.xunolan.rpcproject.ioccontainer.IocContainer;
 @PackageScan(Packages = {"github.xunolan.rpcproject"})
 public class ClientBoot {
     //理想状态下的调用关系：
-    @RpcReference(ImpService = ServiceApi.class)
     private ServiceApi service;
 
+    @RpcReference(ImpService = ServiceApi.class)
+    public void setService(ServiceApi service) {
+        this.service = service;
+    }
     public static void main(String[] args) {
         IocContainer iocContainer = new IocContainer(ClientBoot.class).initIocContainer().run();
 
